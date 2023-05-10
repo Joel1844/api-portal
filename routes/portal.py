@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request,responses,status,UploadFile,File,Form,Dep
 from typing import Optional
 from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
-from config.db import collectionportal, colletionvideo, collentioninsta
+from config.db import collectionportal, colletionvideo, collentioninsta,collentionlistim
 from schemas.portal import portalEntity, portalsEntity, instagramEntity, instagramEsEntity
 from models.portal import Portal
 from bson import ObjectId
@@ -99,9 +99,16 @@ async def create_user3(url: str):
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=instagramEntity(new_scrape))
 
 
+#get data from collentionlistim
+
+@portal.get("/listininfo/", tags=["portal"])
+def find_all_users3():
+    return instagramEsEntity(collentionlistim.find())
+
 @portal.get("/archivo/{nombre_archivo}")
 async def get_archivo(nombre_archivo: str):
     return FileResponse(f"VIOLENCIA/{nombre_archivo}.mp4")
+
 
 
 
