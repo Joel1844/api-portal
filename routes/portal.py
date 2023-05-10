@@ -66,7 +66,7 @@ async def create_user2(url: str):
     date = post.date
     owner_username = post.owner_username
 
-    new_scrape = {"nombre": title, "fecha": str(date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'instagram'}
+    new_scrape = {"Nombre": title, "fecha": str(date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'instagram'}
     # del new_portal["id"]
     id = collentioninsta.insert_one(new_scrape)
     new_scrape =  collentioninsta.find_one({"_id": id.inserted_id})
@@ -91,7 +91,7 @@ async def create_user3(url: str):
         # Adaptive stream
         video_url = yt.streams.filter(progressive=True).order_by('resolution').desc().first().url
 
-    new_scrape = {"nombre": video_title, "fecha": str(video_publish_date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'youtube'}
+    new_scrape = {"Nombre": video_title, "fecha": str(video_publish_date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'youtube'}
     # del new_portal["id"]
     id = collentioninsta.insert_one(new_scrape)
     new_scrape =  collentioninsta.find_one({"_id": id.inserted_id})
