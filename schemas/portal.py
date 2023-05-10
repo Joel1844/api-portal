@@ -15,8 +15,8 @@ def portalsEntity(entity) -> list:
 def instagramEntity(item) -> dict:
     return {
         "id": str(item["_id"]),
-        "title": item["title"],
-        "date": item["date"],
+        "nombre": item["nombre"],
+        "fecha": item["fecha"],
         "video": item["video"],
         "owner_username": item["owner_username"],
         'fuente': item['fuente'],
