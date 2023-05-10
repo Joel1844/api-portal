@@ -16,3 +16,5 @@ CollectionRedSocial = DbRed["usuarios"]
 
 collectionportal = DbRed["portal"]
 colletionvideo = DbRed["video"]
+collentionlistim = DbRed["diario_libre"]
+collentioninsta = DbRed["instagram_violence"]
