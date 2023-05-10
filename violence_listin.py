@@ -48,6 +48,7 @@ for item in items:
     title = item.find('h2')
     link = item.find('a', href=True)
     date = item.find('time', datetime=True)['datetime']
-    dic = {'title': title.text,'link': link['href'],'fuente':'Diario Libre','date': date}
+    link_diairo = 'https://www.diariolibre.com' + link['href']
+    dic = {'nombre': title.text,'video': link_diairo  ,'fuente':'Diario Libre','fecha': date, 'status': 'Pendiente', 'owner_username': 'Diario Libre'}
     #insertar en la base de datos
     collentionlistim.insert_one(dic)
