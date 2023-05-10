@@ -8,9 +8,11 @@ load_dotenv()
 
 MongoConnection = os.getenv('DatabaseConnection')
 
+db = os.getenv('DB_NAME')
+
 Client = MongoClient(MongoConnection)
 
-DbRed = Client["foodfit"]
+DbRed = Client[db]
 
 CollectionRedSocial = DbRed["usuarios"] 
 
