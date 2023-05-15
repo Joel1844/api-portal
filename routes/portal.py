@@ -15,10 +15,6 @@ import instaloader
 
 from datetime import datetime
 import requests
-from bs4 import BeautifulSoup
-from selenium.webdriver.chrome.service import Service
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 import time 
 
 from starlette.status import HTTP_204_NO_CONTENT
