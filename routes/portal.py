@@ -12,6 +12,15 @@ import requests
 import pytube
 import instaloader
 
+
+from datetime import datetime
+import requests
+from bs4 import BeautifulSoup
+from selenium.webdriver.chrome.service import Service
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import time 
+
 from starlette.status import HTTP_204_NO_CONTENT
 
 portal = APIRouter()
@@ -50,6 +59,7 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Uploa
 
 @portal.get("/instagraminfo/", tags=["portal"])
 def find_all_users2():
+    date = collentioninsta.find()
     return instagramEsEntity(collentioninsta.find())
 
 
@@ -64,7 +74,10 @@ async def create_user2(url: str):
     video_url = url
     title = post.caption
     date = post.date
+
+    date  = date.strftime("%d/%m/%Y")
     owner_username = post.owner_username
+
 
     new_scrape = {"Nombre": title, "fecha": str(date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'instagram'}
     # del new_portal["id"]
@@ -81,6 +94,7 @@ async def create_user3(url: str):
     # Get the video title and publish date
     video_title = yt.title
     video_publish_date = yt.publish_date
+    video_publish_date = video_publish_date.strftime("%d/%m/%Y")
     owner_username = yt.author
 
     # Check if the video is a stream or an adaptive stream
@@ -99,7 +113,9 @@ async def create_user3(url: str):
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=instagramEntity(new_scrape))
 
 
-#get data from collentionlistim
+#make scrape diario libre 
+# @portal.post("/listininfo/", tags=["portal"])
+
 
 @portal.get("/listininfo/", tags=["portal"])
 def find_all_users3():
