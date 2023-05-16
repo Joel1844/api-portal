@@ -40,7 +40,7 @@ for i in range(5):  # hacer clic en el botón tres veces
         def click_boton():
             boton_mas_historias = driver.find_element(By.XPATH, '/html/body/div[6]/section/div/div/div[2]/div[2]/div[11]/div')
             boton_mas_historias.click()
-            time.sleep(8)
+            time.sleep(12)
         click_boton()
         click_boton()
     except:
@@ -59,16 +59,40 @@ for item in items:
     link = item.find('a', href=True)
     date = item.find('time',title=True)
     date1 = date['title']
+    img = item.find('img', src=True)
+
+    #obtner tmabien las imagenes despues del boton mas historias
+    if img is not None:
+        imagen = img['src']
+    else:
+        #poner las demas imagenes en un else
+        # imagen = img['src']
+        current_source = item.find('source', srcset=True)
+        #unshif para agregar al inicio de la lista
+        imagen = 'https://www.diariolibre.com' + current_source['srcset'].split(',')[0].strip()
+
+
+        
     date = datetime.datetime.strptime(date1, '%B %d, %Y')
     date_formatted = date.strftime('%d-%m-%Y')
-    # image = item.find('img', src=True)
-    # image
+    #bajar solo las noticias de ayer y hoy
+    yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+    yesterday = yesterday.strftime('%d-%m-%Y')
+    today = datetime.datetime.now()
+    today = today.strftime('%d-%m-%Y')
+    if date_formatted == yesterday or date_formatted == today:
+        print('es de hoy o ayer')
+    else:
+        continue
 
  
 
     link_diairo = 'https://www.diariolibre.com' + link['href']
-    dic = {'Nombre': title.text,'video': link_diairo  ,'fuente':'Diario Libre', 'fecha': date_formatted, 'status': 'Pendiente',"owner_username": "Diario Libre"}
+     
+    dic = {'Nombre': title.text,'video': link_diairo  ,'fuente':'Diario Libre', 'fecha': date_formatted, 'imagen': imagen,'status': 'Pendiente',"owner_username": "Diario Libre"}
     print(dic)
+    try:
+        collentionlistim.insert_one(dic)
+    except BaseException as e:
+            print('Status Failed On,', str(dic), 'With Error', str(e))
 
-    # insertar en la base de datos
-    collentionlistim.insert_one(dic)

@@ -1,5 +1,7 @@
 import tweepy
-# import pandas as pd
+import pandas as pd
+from config.db import collentionlistim
+import datetime
 
 consumer_key = 'ImGK6XiE4b2VgNlGfMO3J5O3I'
 consumer_secret = 'fnkmexUjUfiGfTa7yFLWqZY1swV1NJbfia3M9uVjBHJQKgtHkv'
@@ -16,23 +18,42 @@ auth = tweepy.OAuth1UserHandler(
 api = tweepy.API(auth, wait_on_rate_limit=True)
 
 
-search_query = ['violencia']
-no_of_tweets = 200
+search_query = ['amenaza','violencia','agresión','víctima','abuso']
+no_of_tweets = 1000
 geo = '18.7009,-70.16546,100km'
 
 
 try:
-    #bsucar tweets por palabras clave que estan en la lista search_query
-    # tweets = tweepy.Cursor(api.search, q=search_query, lang='es', geocode=geo,hidden = True).items(no_of_tweets)
+    hoy = datetime.date.today()
+    dia_anterior = hoy - datetime.timedelta(days=1)
+    fecha_anterior_str = dia_anterior.strftime("%Y-%m-%d")
+    query = "({}) until:{} -filter:retweets".format(" OR ".join(search_query), fecha_anterior_str)
+    # Realizar la búsqueda en la API de Twitter
+    tweets = api.search_tweets(q=query, count=no_of_tweets, hidden=True, geocode=geo)
+    tweets_list = []
+    for tweet in tweets:
+        created_at = tweet.created_at
+        user = tweet.user.screen_name
+        text = tweet.text
+        imagen = tweet.entities['media'][0]['media_url'] if 'media' in tweet.entities and len(tweet.entities['media']) > 0 else None
 
-    #buscar tweets por palabras clave que estan en la lista search_query
-    # tweets = tweepy.Cursor(api.search, q=search_query, lang='es', geocode=geo,hidden = True).items(no_of_tweets)1
-    tweets = api.search_tweets(q=search_query, count=no_of_tweets, hidden=True, geocode=geo)
- 
-    attributes_container = [[tweet.created_at, tweet.user.screen_name, tweet.text, tweet.entities['urls'][0]['url']]  for tweet in tweets]
-    print(attributes_container)
-    # columns_name = ['created_at', 'user','screen_name', 'text', 'url']
-    # df = pd.DataFrame(attributes_container, columns=columns_name)
-    # print(df)
+        if imagen is None:
+            imagen = 'https://es.wikipedia.org/wiki/Twitter#/media/Archivo:Logo_of_Twitter.svg'
+        
+    
+
+        url = tweet.entities['urls'][0]['url'] if 'urls' in tweet.entities and len(tweet.entities['urls']) > 0 else None
+        tweet_dict = {'fecha': created_at, 'owner_username': user, 'Nombre': text, 'video': url, 'fuente': 'twitter', 'status': 'Pendiente', 'imagen': imagen}
+        tweets_list.append(tweet_dict)
+    columns_name = ['fecha', 'owner_username', 'Nombre', 'video', 'fuente', 'status', 'imagen']
+    df = pd.DataFrame(tweets_list, columns=columns_name)
+    
+    for frame in df.to_dict('records'):
+        try:
+            collentionlistim.insert_one(frame)
+            # pruba.insert_one(frame)
+        except BaseException as e:
+            print('Status Failed On,', str(frame))
+
 except BaseException as e:
-    print('Status Failed On,',str(e))
+    print('Status Failed On,', str(e))
