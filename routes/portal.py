@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
 from config.db import collectionportal, colletionvideo, collentioninsta,collentionlistim
-from schemas.portal import portalEntity, portalsEntity, instagramEntity, instagramEsEntity
+from schemas.portal import portalEntity, portalsEntity, instagramEntity, instagramEsEntity, diarioEntity, diarioEsEntity
 from models.portal import Portal
 from bson import ObjectId
 from fastapi.responses import FileResponse
@@ -11,6 +11,10 @@ import os
 import requests
 import pytube
 import instaloader
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 from datetime import datetime
@@ -69,13 +73,14 @@ async def create_user2(url: str):
     post = instaloader.Post.from_shortcode(L.context, shortcode)
     video_url = url
     title = post.caption
-    date = post.date
+    date = post.date,
+    imagen = post.url
 
     date  = date.strftime("%d/%m/%Y")
     owner_username = post.owner_username
 
 
-    new_scrape = {"Nombre": title, "fecha": str(date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'instagram'}
+    new_scrape = {"Nombre": title, "fecha": str(date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'instagram', "imagen": imagen}
     # del new_portal["id"]
     id = collentioninsta.insert_one(new_scrape)
     new_scrape =  collentioninsta.find_one({"_id": id.inserted_id})
@@ -101,7 +106,7 @@ async def create_user3(url: str):
         # Adaptive stream
         video_url = yt.streams.filter(progressive=True).order_by('resolution').desc().first().url
 
-    new_scrape = {"Nombre": video_title, "fecha": str(video_publish_date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'youtube'}
+    new_scrape = {"Nombre": video_title, "fecha": str(video_publish_date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'youtube', "imagen": "https://www.youtube.com/img/desktop/yt_1200.png"}
     # del new_portal["id"]
     id = collentioninsta.insert_one(new_scrape)
     new_scrape =  collentioninsta.find_one({"_id": id.inserted_id})
@@ -115,7 +120,7 @@ async def create_user3(url: str):
 
 @portal.get("/listininfo/", tags=["portal"])
 def find_all_users3():
-    return instagramEsEntity(collentionlistim.find())
+    return diarioEsEntity(collentionlistim.find())
 
 @portal.get("/archivo/{nombre_archivo}")
 async def get_archivo(nombre_archivo: str):
