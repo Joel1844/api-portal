@@ -24,7 +24,7 @@ headers = {
 
 url = "https://www.diariolibre.com/tags/violencia-de-genero/528"
 
-path = 'C:/Users/frias/Downloads/chromedriver_win32 (6)/chromedriver.exe'
+path = 'chromedriver.exe'
 
 s = Service(path)
 driver = webdriver.Chrome(service=s)
