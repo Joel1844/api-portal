@@ -11,4 +11,6 @@ class Portal:
     video: str = Form(...)
     latitude: str = Form(...)
     longitude: str = Form(...)
+    clasification: str = Form(...)
+    description: str = Form(...)
 

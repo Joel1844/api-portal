@@ -48,7 +48,7 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Uploa
     
     f.close() #
 
-    new_portal = {"name": portal.name, "date": portal.date, "video": guardarvideo, "latitude": portal.latitude, "longitude": portal.longitude, "status": "Pendiente"}
+    new_portal = {"name": portal.name, "date": portal.date, "video": guardarvideo, "latitude": portal.latitude, "longitude": portal.longitude,"clasificacion": portal.clasification, "descripcion": portal.description, "status": "Pendiente"}
     # del new_portal["id"]
     id = collectionportal.insert_one(new_portal)
     portal =  collectionportal.find_one({"_id": id.inserted_id})
