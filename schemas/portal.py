@@ -4,10 +4,11 @@ def portalEntity(item) -> dict:
         "Nombre": item["name"],
         "fecha": item["date"],
         "video": item["video"],
+        "imagen": item["image"],
         "latitud": item["latitude"],
         "longitud": item["longitude"],
-        "clasificacion": item["clasification"],
-        "descripcion": item["description"],
+        "clasificacion": item["clasificacion"],
+        "descripcion": item["descripcion"],
     }   
     
 def portalsEntity(entity) -> list:
