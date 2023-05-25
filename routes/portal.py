@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Request,responses,status,UploadFile,File,Form,Depends
+from fastapi import APIRouter, Request,responses,status,UploadFile,File,Form,Depends, HTTPException
 from typing import Optional
 from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
 from config.db import collectionportal, colletionvideo, collentioninsta,collentionlistim
-from schemas.portal import portalEntity, portalsEntity, instagramEntity, instagramEsEntity
+from schemas.portal import portalEntity, portalsEntity, instagramEntity, instagramEsEntity, diarioEntity, diarioEsEntity
 from models.portal import Portal
 from bson import ObjectId
 from fastapi.responses import FileResponse
@@ -13,12 +13,14 @@ import pytube
 import instaloader
 
 
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 from datetime import datetime
 import requests
-from bs4 import BeautifulSoup
-from selenium.webdriver.chrome.service import Service
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 import time 
 
 from starlette.status import HTTP_204_NO_CONTENT
@@ -31,29 +33,87 @@ def find_all_users():
     return portalsEntity(collectionportal.find())
 
 @portal.post("/portal", tags=["portal"])
-async def create_user(req:Request ,portal: Portal = Depends(), video_file: UploadFile = File(...), ):
-    video_content = await video_file.read() # leer el contenido del archivo
-    carpeta = ("VIOLENCIA")
-    contenido_archivo = video_content
-    video_id = colletionvideo.insert_one({"description": video_file.filename}).inserted_id
+async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optional[UploadFile]= File(default=None),image_file: Optional[UploadFile] = File(default=None) ):
+
+    carpeta = "VIOLENCIA"
     os.makedirs(carpeta, exist_ok=True)
-    rutacompleta = os.path.join(carpeta, f"{str(video_id)}.{video_file.content_type.split('/'   )[1]}")
-    guardarvideo = f"{req.base_url}archivo/{video_id}"
-    
 
-    with open(rutacompleta, 'wb') as f:
-        print(rutacompleta)
-        # escribir los datos binarios en el archivo
-        f.write(contenido_archivo)
+    video_id = None
+    guardarvideo = None
+    if video_file is not None:
+        video_content = await video_file.read()
+        video_id = colletionvideo.insert_one({"description": video_file.filename}).inserted_id
+        video_rutacompleta = os.path.join(carpeta, f"{str(video_id)}.{video_file.content_type.split('/')[1]}")
+        
+        with open(video_rutacompleta, 'wb') as f:
+            f.write(video_content)
+        
+        guardarvideo = f"{req.base_url}archivo/{video_id}"
     
-    f.close() #
+    image_id = None
+    guardarimagen = None
+    if image_file is not None:
+        image_content = await image_file.read()
+        image_id = colletionvideo.insert_one({"description": image_file.filename}).inserted_id
+        image_rutacompleta = os.path.join(carpeta, f"{str(image_id)}.{image_file.content_type.split('/')[1]}")
+        
+        with open(image_rutacompleta, 'wb') as f:
+            f.write(image_content)
 
-    new_portal = {"name": portal.name, "date": portal.date, "video": guardarvideo, "latitude": portal.latitude, "longitude": portal.longitude, "status": "Pendiente"}
-    # del new_portal["id"]
+        guardarimagen = f"{req.base_url}archivo/{image_id}"
+
+    new_portal = {
+        "name": portal.name,
+        "date": portal.date,
+        "video": guardarvideo if guardarvideo is not None else None,
+        "image": guardarimagen if guardarimagen is not None else None,
+        "latitude": portal.latitude, 
+        "longitude": portal.longitude,
+        "clasificacion": portal.clasification,
+        "descripcion": portal.description,
+        "status": "Pendiente"
+    }
+
+    if new_portal["video"] is None and new_portal["image"] is None:
+        raise HTTPException(status_code=400, detail="At least one of 'video' or 'image' is required.")
+
+    # if guardarvideo is not None:
+    #     new_portal["video"] = guardarvideo
+    
+    # if guardarimagen is not None:
+    #     new_portal["image"] = guardarimagen
+
     id = collectionportal.insert_one(new_portal)
-    portal =  collectionportal.find_one({"_id": id.inserted_id})
+    portal = collectionportal.find_one({"_id": id.inserted_id})
 
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=portalEntity(portal))
+
+    # video_content = await video_file.read() # leer el contenido del archivo
+    # image_content = await image_file.read()  # leer el contenido del archivo de imagen
+
+    # carpeta = ("VIOLENCIA")
+    # contenido_archivo = video_content
+    # video_id = colletionvideo.insert_one({"description": video_file.filename}).inserted_id
+    # image_id = colletionvideo.insert_one({"description": image_file.filename}).inserted_id
+    # os.makedirs(carpeta, exist_ok=True)
+
+    # rutacompleta = os.path.join(carpeta, f"{str(video_id)}.{video_file.content_type.split('/'   )[1]}")
+    # guardarvideo = f"{req.base_url}archivo/{video_id}"
+    
+
+    # with open(rutacompleta, 'wb') as f:
+    #     print(rutacompleta)
+    #     # escribir los datos binarios en el archivo
+    #     f.write(contenido_archivo)
+    
+    # f.close() #
+
+    # new_portal = {"name": portal.name, "date": portal.date, "video": guardarvideo, "latitude": portal.latitude, "longitude": portal.longitude,"clasificacion": portal.clasification, "descripcion": portal.description, "status": "Pendiente"}
+    # # del new_portal["id"]
+    # id = collectionportal.insert_one(new_portal)
+    # portal =  collectionportal.find_one({"_id": id.inserted_id})
+
+    # return JSONResponse(status_code=status.HTTP_201_CREATED, content=portalEntity(portal))
 
 
 
@@ -73,13 +133,14 @@ async def create_user2(url: str):
     post = instaloader.Post.from_shortcode(L.context, shortcode)
     video_url = url
     title = post.caption
-    date = post.date
+    date = post.date,
+    imagen = post.url
 
     date  = date.strftime("%d/%m/%Y")
     owner_username = post.owner_username
 
 
-    new_scrape = {"Nombre": title, "fecha": str(date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'instagram'}
+    new_scrape = {"Nombre": title, "fecha": str(date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'instagram', "imagen": imagen}
     # del new_portal["id"]
     id = collentioninsta.insert_one(new_scrape)
     new_scrape =  collentioninsta.find_one({"_id": id.inserted_id})
@@ -105,7 +166,7 @@ async def create_user3(url: str):
         # Adaptive stream
         video_url = yt.streams.filter(progressive=True).order_by('resolution').desc().first().url
 
-    new_scrape = {"Nombre": video_title, "fecha": str(video_publish_date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'youtube'}
+    new_scrape = {"Nombre": video_title, "fecha": str(video_publish_date), "video": video_url, "owner_username": owner_username, "status": "Pendiente", 'fuente': 'youtube', "imagen": "https://www.youtube.com/img/desktop/yt_1200.png"}
     # del new_portal["id"]
     id = collentioninsta.insert_one(new_scrape)
     new_scrape =  collentioninsta.find_one({"_id": id.inserted_id})
@@ -119,7 +180,7 @@ async def create_user3(url: str):
 
 @portal.get("/listininfo/", tags=["portal"])
 def find_all_users3():
-    return instagramEsEntity(collentionlistim.find())
+    return diarioEsEntity(collentionlistim.find())
 
 @portal.get("/archivo/{nombre_archivo}")
 async def get_archivo(nombre_archivo: str):
