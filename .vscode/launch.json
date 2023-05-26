@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "module": "uvicorn",
-            "args":["app:app","--reload","--port","8015","--host","localhost"],
+            "args":["app:app","--reload","--port","8000","--host","localhost"],
             
             "jinja": true,
             "justMyCode": true

@@ -30,7 +30,8 @@ portal = APIRouter()
 
 @portal.get("/portal",tags=["portal"])
 def find_all_users():
-    return portalsEntity(collectionportal.find())
+     arr = portalsEntity(collectionportal.find())
+     return  arr
 
 @portal.post("/portal", tags=["portal"])
 async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optional[UploadFile]= File(default=None),image_file: Optional[UploadFile] = File(default=None) ):
@@ -48,40 +49,45 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
         with open(video_rutacompleta, 'wb') as f:
             f.write(video_content)
         
-        guardarvideo = f"{req.base_url}VIOLENCIA/{video_id}"
+        
+        guardarvideo = os.path.join(f"{carpeta}/{video_id}.{video_file.content_type.split('/')[1]}")
+        api_url_video = os.path.join(f"archivovideo/{video_id}.{video_file.content_type.split('/')[1]}")
+        
     
+    carpeta1 = "VIOIMAGEN"
+    os.makedirs(carpeta1, exist_ok=True)
     image_id = None
     guardarimagen = None
     if image_file is not None:
         image_content = await image_file.read()
         image_id = colletionvideo.insert_one({"description": image_file.filename}).inserted_id
-        image_rutacompleta = os.path.join(carpeta, f"{str(image_id)}.{image_file.content_type.split('/')[1]}")
+        image_rutacompleta = os.path.join(carpeta1, f"{str(image_id)}.{image_file.content_type.split('/')[1]}")
         
         with open(image_rutacompleta, 'wb') as f:
             f.write(image_content)
 
-        guardarimagen = f"{req.base_url}VIOLENCIA/{image_id}"
+        guardarimagen =os.path.join(f"{carpeta1}/{image_id}.{image_file.content_type.split('/')[1]}")
+        apir_url_imagen =os.path.join(f"archivovimagen/{image_id}.{image_file.content_type.split('/')[1]}")
+
 
     new_portal = {
         "name": portal.name,
-        "date": portal.date,
-        "video": guardarvideo if guardarvideo is not None else None,
-        "image": guardarimagen if guardarimagen is not None else None,
+        "Lastname": portal.Lastname,
+        "fecha": portal.fecha,
+        "video": api_url_video if guardarvideo is not None else None,
+        "imagen": apir_url_imagen if guardarimagen is not None else None,
         "latitude": portal.latitude, 
         "longitude": portal.longitude,
         "clasificacion": portal.clasification,
         "descripcion": portal.description,
-        "status": "Pendiente"
+        "status": "Pendiente",
+        "Titulo": portal.titulo,
+        "fuente": portal.fuente,
+
     }
 
-    if new_portal["video"] is None and new_portal["image"] is None:
-        raise HTTPException(status_code=400, detail="At least one of 'video' or 'image' is required.")
-
-    # if guardarvideo is not None:
-    #     new_portal["video"] = guardarvideo
-    
-    # if guardarimagen is not None:
-    #     new_portal["image"] = guardarimagen
+    if new_portal["video"] is None and new_portal["imagen"] is None:
+        raise HTTPException(status_code=400, detail="At least one of 'video' or 'imagen' is required.")
 
     id = collectionportal.insert_one(new_portal)
     portal = collectionportal.find_one({"_id": id.inserted_id})
@@ -154,14 +160,20 @@ def find_all_users2():
 def find_all_users3():
     return diarioEsEntity(collentionlistim.find())
 
-@portal.get("/archivo/{nombre_archivo}")
+@portal.get("/archivovideo/{nombre_archivo}")
 async def get_archivo(nombre_archivo: str):
-    return FileResponse(f"VIOLENCIA/{nombre_archivo}.mp4")
+    # return FileResponse(f"VIOLENCIA/{nombre_archivo}")
+    #solo retornar la request url con el file response
+    return FileResponse(f"VIOLENCIA/{nombre_archivo}")
 
-#listar todos los videos que vienen de la carpeta VIOLENCIA 
-@portal.get("/listarvideos/", tags=["portal"])
-def find_all_users4():
-    return listvideosEntity(collentionvideo.find())
+
+@portal.get("/archivovimagen/{nombre_archivo}")
+async def get_archivo(nombre_archivo: str):
+    return FileResponse(f"VIOIMAGEN/{nombre_archivo}")
+
+
+
+
 
 
 

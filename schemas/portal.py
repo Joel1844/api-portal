@@ -2,13 +2,17 @@ def portalEntity(item) -> dict:
     return {
         "id": str(item["_id"]),
         "Nombre": item["name"],
-        "fecha": item["date"],
+        "Apellido": item["Lastname"],
+        "Titulo": item["Titulo"],
+        "fecha": item["fecha"],
         "video": item["video"],
-        "imagen": item["image"],
+        "imagen": item["imagen"],
         "latitud": item["latitude"],
         "longitud": item["longitude"],
         "clasificacion": item["clasificacion"],
         "descripcion": item["descripcion"],
+        "status": item["status"],
+        "fuente": item["fuente"]
     }   
     
 def portalsEntity(entity) -> list:
