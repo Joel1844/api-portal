@@ -8,6 +8,8 @@ from models.portal import Portal
 from bson import ObjectId
 from fastapi.responses import FileResponse
 import os 
+import math
+
 
 
 
@@ -26,12 +28,41 @@ portal = APIRouter()
 
 
 @portal.get("/portal", tags=["portal"])
-def find_all_users(order: Optional[str] = Query(None, enum=['asc', 'desc'])):
-    arr = portalsEntity(collectionportal.find())
+def find_all_users(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    order: Optional[str] = Query(None, enum=['asc', 'desc'])
+):
+    # Obtén el número total de documentos en la colección
+    total_documents = collectionportal.count_documents({})
     
-    arr.reverse()
+    # Calcula el número total de páginas disponibles
+    total_pages = math.ceil(total_documents / limit)
     
-    return arr
+    # Verifica si la página solicitada excede el número total de páginas
+    if page > total_pages:
+        raise HTTPException(status_code=404, detail="Página no encontrada")
+    
+    # Calcula el índice de inicio y fin para la consulta
+    skip_count = (page - 1) * limit
+    
+    # Realiza la consulta a la base de datos con paginación
+    data = collectionportal.find().skip(skip_count).limit(limit)
+    
+    # Ordena los datos si se proporciona el parámetro `order`
+    if order == 'asc':
+        data = sorted(data, key=lambda x: x['fecha'])
+    elif order == 'desc':
+        data = sorted(data, key=lambda x: x['fecha'], reverse=True)
+    
+    # Convierte los resultados en una lista
+    results = list(data)
+    
+    return {
+        "total_pages": total_pages,
+        "current_page": page,
+        "results": portalsEntity(results)
+    }
 
 @portal.post("/portal", tags=["portal"])
 async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optional[UploadFile]= File(default=None),image_file: Optional[UploadFile] = File(default=None) ):
