@@ -9,7 +9,7 @@ from selenium.webdriver.common.by import By
 import time 
 from dateutil import parser
 import locale
-from config.db import collentionlistim
+from config.db import collectionportal,
 
 
 locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')
@@ -89,10 +89,11 @@ for item in items:
 
     link_diairo = 'https://www.diariolibre.com' + link['href']
      
-    dic = {'Nombre': title.text,'video': link_diairo  ,'fuente':'Diario Libre', 'fecha': date_formatted, 'imagen': imagen,'status': 'Pendiente',"owner_username": "Diario Libre"}
+    dic = {'Titulo': title.text,'video': link_diairo  ,'fuente':'Diario Libre', 'fecha': date_formatted, 'imagen': imagen,'status': 'Pendiente',"name": "Diario Libre", "Lastname": "Diario Libre", "longitude": -69.9000000, "latitude": 18.4833333, "clasificacion": "Violencia de Genero", "descripcion": "Violencia de Genero"}
     print(dic)
     try:
-        collentionlistim.insert_one(dic)
+        collectionportal.insert_one(dic)
     except BaseException as e:
             print('Status Failed On,', str(dic), 'With Error', str(e))
+            
 

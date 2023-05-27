@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request,responses,status,UploadFile,File,Form,Depends, HTTPException
+from fastapi import APIRouter, Request,responses,status,UploadFile,File,Form,Depends, HTTPException,Query
 from typing import Optional
 from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
@@ -8,9 +8,6 @@ from models.portal import Portal
 from bson import ObjectId
 from fastapi.responses import FileResponse
 import os 
-import requests
-import pytube
-import instaloader
 
 
 
@@ -20,7 +17,7 @@ load_dotenv()
 
 
 from datetime import datetime
-import requests
+
 import time 
 
 from starlette.status import HTTP_204_NO_CONTENT
@@ -28,10 +25,13 @@ from starlette.status import HTTP_204_NO_CONTENT
 portal = APIRouter()
 
 
-@portal.get("/portal",tags=["portal"])
-def find_all_users():
-     arr = portalsEntity(collectionportal.find())
-     return  arr
+@portal.get("/portal", tags=["portal"])
+def find_all_users(order: Optional[str] = Query(None, enum=['asc', 'desc'])):
+    arr = portalsEntity(collectionportal.find())
+    
+    arr.reverse()
+    
+    return arr
 
 @portal.post("/portal", tags=["portal"])
 async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optional[UploadFile]= File(default=None),image_file: Optional[UploadFile] = File(default=None) ):
@@ -73,6 +73,7 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
     new_portal = {
         "name": portal.name,
         "Lastname": portal.Lastname,
+        #hacer que la fecha vengan deun formato correcto    
         "fecha": portal.fecha,
         "video": api_url_video if guardarvideo is not None else None,
         "imagen": apir_url_imagen if guardarimagen is not None else None,
@@ -83,7 +84,6 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
         "status": "Pendiente",
         "Titulo": portal.titulo,
         "fuente": portal.fuente,
-
     }
 
     if new_portal["video"] is None and new_portal["imagen"] is None:
