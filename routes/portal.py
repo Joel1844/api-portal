@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request,responses,status,UploadFile,File,Form,Depends, HTTPException,Query
+from fastapi import APIRouter, FastAPI, Request,responses,status,UploadFile,File,Form,Depends, HTTPException,Query
 from typing import Optional
 from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
@@ -8,6 +8,9 @@ from models.portal import Portal,UpdatePortal
 from fastapi.responses import FileResponse
 import os 
 import math
+
+from pymongo.errors import DuplicateKeyError
+
 from dotenv import load_dotenv
 from bson import ObjectId
 
@@ -21,6 +24,8 @@ import time
 from starlette.status import HTTP_204_NO_CONTENT
 
 portal = APIRouter()
+
+app = FastAPI()
 
 
 # @portal.get("/portal", tags=["portal"])
@@ -53,66 +58,79 @@ def fill_all_users():
     return portalsEntity(collectionportal.find())
     
 
+@app.exception_handler(DuplicateKeyError)
+async def handle_duplicate_key_error(request, exc):
+    error_message = "Clave duplicada"
+    return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": error_message})
+
 @portal.post("/portal", tags=["portal"])
 async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optional[UploadFile]= File(default=None),image_file: Optional[UploadFile] = File(default=None) ):
 
-    carpeta = "VIOLENCIA"
-    os.makedirs(carpeta, exist_ok=True)
+    try:
+        carpeta = "VIOLENCIA"
+        os.makedirs(carpeta, exist_ok=True)
 
-    video_id = None
-    guardarvideo = None
-    if video_file is not None:
-        video_content = await video_file.read()
-        video_id = colletionvideo.insert_one({"description": video_file.filename}).inserted_id
-        video_rutacompleta = os.path.join(carpeta, f"{str(video_id)}.{video_file.content_type.split('/')[1]}")
+        video_id = None
+        guardarvideo = None
+        if video_file is not None:
+            video_content = await video_file.read()
+            video_id = colletionvideo.insert_one({"description": video_file.filename}).inserted_id
+            video_rutacompleta = os.path.join(carpeta, f"{str(video_id)}.{video_file.content_type.split('/')[1]}")
+            
+            with open(video_rutacompleta, 'wb') as f:
+                f.write(video_content)
+            
+            
+            guardarvideo = os.path.join(f"{carpeta}/{video_id}.{video_file.content_type.split('/')[1]}")
+            api_url_video = os.path.join(f"archivovideo/{video_id}.{video_file.content_type.split('/')[1]}")
+            
         
-        with open(video_rutacompleta, 'wb') as f:
-            f.write(video_content)
-        
-        
-        guardarvideo = os.path.join(f"{carpeta}/{video_id}.{video_file.content_type.split('/')[1]}")
-        api_url_video = os.path.join(f"archivovideo/{video_id}.{video_file.content_type.split('/')[1]}")
-        
+        carpeta1 = "VIOIMAGEN"
+        os.makedirs(carpeta1, exist_ok=True)
+        image_id = None
+        guardarimagen = None
+        if image_file is not None:
+            image_content = await image_file.read()
+            image_id = colletionvideo.insert_one({"description": image_file.filename}).inserted_id
+            image_rutacompleta = os.path.join(carpeta1, f"{str(image_id)}.{image_file.content_type.split('/')[1]}")
+            
+            with open(image_rutacompleta, 'wb') as f:
+                f.write(image_content)
+
+            guardarimagen =os.path.join(f"{carpeta1}/{image_id}.{image_file.content_type.split('/')[1]}")
+            apir_url_imagen =os.path.join(f"archivovimagen/{image_id}.{image_file.content_type.split('/')[1]}")
+
+
+        new_portal = {
+            "name": portal.name,
+            "Lastname": portal.Lastname,
+            #hacer que la fecha vengan deun formato correcto    
+            "fecha": portal.fecha,
+            "video": api_url_video if guardarvideo is not None else None,
+            "imagen": apir_url_imagen if guardarimagen is not None else None,
+            "latitude": portal.latitude, 
+            "longitude": portal.longitude,
+            "clasificacion": portal.clasification,
+            "descripcion": portal.description,
+            "status": "Pendiente",
+            "Titulo": portal.titulo,
+            "fuente": portal.fuente,
+        }
+
+        if new_portal["video"] is None and new_portal["imagen"] is None:
+            raise HTTPException(status_code=400, detail="At least one of 'video' or 'imagen' is required.")
+
+
+        id = collectionportal.insert_one(new_portal)
+        portal = collectionportal.find_one({"_id": id.inserted_id})
+
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content=portalEntity(portal))
     
-    carpeta1 = "VIOIMAGEN"
-    os.makedirs(carpeta1, exist_ok=True)
-    image_id = None
-    guardarimagen = None
-    if image_file is not None:
-        image_content = await image_file.read()
-        image_id = colletionvideo.insert_one({"description": image_file.filename}).inserted_id
-        image_rutacompleta = os.path.join(carpeta1, f"{str(image_id)}.{image_file.content_type.split('/')[1]}")
-        
-        with open(image_rutacompleta, 'wb') as f:
-            f.write(image_content)
+    except DuplicateKeyError:
+        error_message = "Clave duplicada"
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": error_message})
+    
 
-        guardarimagen =os.path.join(f"{carpeta1}/{image_id}.{image_file.content_type.split('/')[1]}")
-        apir_url_imagen =os.path.join(f"archivovimagen/{image_id}.{image_file.content_type.split('/')[1]}")
-
-
-    new_portal = {
-        "name": portal.name,
-        "Lastname": portal.Lastname,
-        #hacer que la fecha vengan deun formato correcto    
-        "fecha": portal.fecha,
-        "video": api_url_video if guardarvideo is not None else None,
-        "imagen": apir_url_imagen if guardarimagen is not None else None,
-        "latitude": portal.latitude, 
-        "longitude": portal.longitude,
-        "clasificacion": portal.clasification,
-        "descripcion": portal.description,
-        "status": "Pendiente",
-        "Titulo": portal.titulo,
-        "fuente": portal.fuente,
-    }
-
-    if new_portal["video"] is None and new_portal["imagen"] is None:
-        raise HTTPException(status_code=400, detail="At least one of 'video' or 'imagen' is required.")
-
-    id = collectionportal.insert_one(new_portal)
-    portal = collectionportal.find_one({"_id": id.inserted_id})
-
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=portalEntity(portal))
 
 
 @portal.get("/instagraminfo/", tags=["portal"])
