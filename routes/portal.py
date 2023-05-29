@@ -52,7 +52,7 @@ app = FastAPI()
     
 #     return portalsEntity(results)
 
-
+ 
 @portal.get("/portal", tags=["portal"])
 def fill_all_users():
     return portalsEntity(collectionportal.find())
@@ -146,7 +146,9 @@ def actualizar_status(body: UpdatePortal):
     ids = [ObjectId(id) for id in body.ids]
 
     collectionportal.update_many({"_id": {'$in': ids}}, {"$set": {"status": body.status}})
-    return {"message": "status actualizado"}
+
+    #devolver los datos actualizados 
+    return portalsEntity(collectionportal.find({"_id": {'$in': ids}}))
 
 
 
