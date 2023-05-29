@@ -1,6 +1,10 @@
-from pydantic.dataclasses import  dataclass
-from typing import Optional
+from pydantic.dataclasses import dataclass
+from pydantic import BaseModel,validator
+from typing import Optional,List
 from fastapi import Form, File, UploadFile
+from bson import ObjectId
+from enum import Enum
+
 
 @dataclass
 class Portal:
@@ -18,5 +22,19 @@ class Portal:
     description: str = Form(default=None)
     fuente : str = Form(default=None)
    
-    
 
+class STATUS(str, Enum):
+    APROBADO = "Aprobado"
+    RECHAZADO = "Rechazado"
+
+
+class UpdatePortal(BaseModel):
+    ids: List[str]
+    status: STATUS
+
+    @validator('ids')
+    def validate_object_ids(cls, ids):
+        for id in ids:
+            if not ObjectId.is_valid(id):
+                raise ValueError(f"ID inválido: {id}")
+        return ids

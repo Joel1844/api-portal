@@ -4,16 +4,12 @@ from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
 from config.db import collectionportal, colletionvideo, collentioninsta,collentionlistim
 from schemas.portal import portalEntity, portalsEntity, instagramEntity, instagramEsEntity, diarioEntity, diarioEsEntity
-from models.portal import Portal
-from bson import ObjectId
+from models.portal import Portal,UpdatePortal
 from fastapi.responses import FileResponse
 import os 
 import math
-
-
-
-
 from dotenv import load_dotenv
+from bson import ObjectId
 
 load_dotenv()
 
@@ -27,42 +23,35 @@ from starlette.status import HTTP_204_NO_CONTENT
 portal = APIRouter()
 
 
+# @portal.get("/portal", tags=["portal"])
+# def find_all_users(page: int = Query(1, ge=1),limit: int = Query(10, ge=1, le=100),order: Optional[str] = Query(None, enum=['asc', 'desc'])
+# ):
+#     total_documents = collectionportal.count_documents({})
+    
+#     total_pages = math.ceil(total_documents / limit)
+    
+#     # Verifica si la página solicitada excede el número total de páginas
+#     if page > total_pages:
+#         raise HTTPException(status_code=404, detail="Página no encontrada")
+    
+#     skip_count = (page - 1) * limit
+    
+#     data = collectionportal.find().skip(skip_count).limit(limit)
+    
+#     if order == 'asc':
+#         data = sorted(data, key=lambda x: x['fecha'])
+#     elif order == 'desc':
+#         data = sorted(data, key=lambda x: x['fecha'], reverse=True)
+    
+#     results = list(data)
+    
+#     return portalsEntity(results)
+
+
 @portal.get("/portal", tags=["portal"])
-def find_all_users(
-    page: int = Query(1, ge=1),
-    limit: int = Query(10, ge=1, le=100),
-    order: Optional[str] = Query(None, enum=['asc', 'desc'])
-):
-    # Obtén el número total de documentos en la colección
-    total_documents = collectionportal.count_documents({})
+def fill_all_users():
+    return portalsEntity(collectionportal.find())
     
-    # Calcula el número total de páginas disponibles
-    total_pages = math.ceil(total_documents / limit)
-    
-    # Verifica si la página solicitada excede el número total de páginas
-    if page > total_pages:
-        raise HTTPException(status_code=404, detail="Página no encontrada")
-    
-    # Calcula el índice de inicio y fin para la consulta
-    skip_count = (page - 1) * limit
-    
-    # Realiza la consulta a la base de datos con paginación
-    data = collectionportal.find().skip(skip_count).limit(limit)
-    
-    # Ordena los datos si se proporciona el parámetro `order`
-    if order == 'asc':
-        data = sorted(data, key=lambda x: x['fecha'])
-    elif order == 'desc':
-        data = sorted(data, key=lambda x: x['fecha'], reverse=True)
-    
-    # Convierte los resultados en una lista
-    results = list(data)
-    
-    return {
-        "total_pages": total_pages,
-        "current_page": page,
-        "results": portalsEntity(results)
-    }
 
 @portal.post("/portal", tags=["portal"])
 async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optional[UploadFile]= File(default=None),image_file: Optional[UploadFile] = File(default=None) ):
@@ -130,6 +119,17 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
 def find_all_users2():
     date = collentioninsta.find()
     return instagramEsEntity(collentioninsta.find())
+
+
+#acrualizar el status de la base de datos mediante el id
+@portal.put("/portal", tags=["portal"])
+def actualizar_status(body: UpdatePortal):
+
+    ids = [ObjectId(id) for id in body.ids]
+
+    collectionportal.update_many({"_id": {'$in': ids}}, {"$set": {"status": body.status}})
+    return {"message": "status actualizado"}
+
 
 
 # @portal.post("/instagraminfo/", tags=["portal"])
