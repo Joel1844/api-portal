@@ -152,6 +152,8 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+*.json
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
@@ -166,4 +168,20 @@ VIOLENCIA/*
 *.mp4
 
 *.webp
+
+.vscode/launch.json
+
+.vscode
+
+/.vscode
+
+.vscode/*
+
+!.vscode/launch.json
+
+!.vscode/settings.json
+
+!.vscode/tasks.json
+
+.vscode/
 
