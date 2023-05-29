@@ -169,19 +169,5 @@ VIOLENCIA/*
 
 *.webp
 
-.vscode/launch.json
-
 .vscode
-
-/.vscode
-
-.vscode/*
-
-!.vscode/launch.json
-
-!.vscode/settings.json
-
-!.vscode/tasks.json
-
-.vscode/
 
