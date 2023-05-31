@@ -63,6 +63,10 @@ async def handle_duplicate_key_error(request, exc):
     error_message = "Clave duplicada"
     return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": error_message})
 
+@app.exception_handler(HTTPException)
+async def handle_http_exception(request, exc):
+    return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
+
 @portal.post("/portal", tags=["portal"])
 async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optional[UploadFile]= File(default=None),image_file: Optional[UploadFile] = File(default=None) ):
 
@@ -120,7 +124,6 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
         if new_portal["video"] is None and new_portal["imagen"] is None:
             raise HTTPException(status_code=400, detail="At least one of 'video' or 'imagen' is required.")
 
-
         id = collectionportal.insert_one(new_portal)
         portal = collectionportal.find_one({"_id": id.inserted_id})
 
@@ -129,6 +132,11 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
     except DuplicateKeyError:
         error_message = "Clave duplicada"
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": error_message})
+    
+    except Exception as error:
+        # Si ocurre un error diferente a DuplicateKeyError, no se guardarán los archivos
+        error_message = str(error)
+        raise HTTPException(status_code=500, detail=error_message)
     
 
 
