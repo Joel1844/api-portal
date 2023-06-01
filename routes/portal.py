@@ -117,7 +117,7 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
             "clasificacion": portal.clasification,
             "descripcion": portal.description,
             "status": "Pendiente",
-            "Titulo": portal.titulo,
+            "Titulo": portal.Titulo,
             "fuente": portal.fuente,
         }
 
