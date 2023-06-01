@@ -30,6 +30,7 @@ app = FastAPI()
 
 from math import ceil
 
+#aquii se hace la consulta de la base de datos
 @portal.get("/portal", tags=["portal"])
 def find_all_users(
     page: Optional[int] = Query(1, ge=1),
