@@ -1,9 +1,9 @@
-from fastapi import APIRouter, FastAPI, Request,responses,status,UploadFile,File,Form,Depends, HTTPException,Query
+from fastapi import APIRouter, FastAPI, Request,status,UploadFile,File,Depends, HTTPException,Query
 from typing import Optional
 from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
 from config.db import collectionportal, colletionvideo, collentioninsta,collentionlistim
-from schemas.portal import portalEntity, portalsEntity, instagramEntity, instagramEsEntity, diarioEntity, diarioEsEntity
+from schemas.portal import portalEntity, portalsEntity, instagramEsEntity, diarioEsEntity
 from models.portal import Portal,UpdatePortal
 from fastapi.responses import FileResponse
 import os 
@@ -28,43 +28,49 @@ portal = APIRouter()
 app = FastAPI()
 
 
-# @portal.get("/portal", tags=["portal"])
-# def find_all_users(
-#     page: Optional[int] = Query(1, ge=1),
-#     limit: Optional[int] = Query(10, ge=1, le=100),
-#     status: Optional[str] = Query(None)
-# ):
-#     query = {}
-
-#     if page is not None and page < 1:
-#         raise HTTPException(status_code=400, )
-
-#     if limit is not None and (limit not in [10, 25, 100]):
-#         raise HTTPException(status_code=400)
-
-#     if status is not None:
-#         query["status"] = status
-
-#     total_documents = collectionportal.count_documents(query)
-
-#     if page is not None and limit is not None:
-#         skip_count = (page - 1) * limit
-#         data = collectionportal.find(query).skip(skip_count).limit(limit)
-#     else:
-#         data = collectionportal.find(query)
-
-#     results = list(data)
-
-#     total_pages = ceil(total_documents / limit)
-
-#     response = {
-#         "total_pages": total_pages,
-#         "data": portalsEntity(results)
-#     }
-
-#     return response
+from math import ceil
 
 @portal.get("/portal", tags=["portal"])
+def find_all_users(
+    page: Optional[int] = Query(1, ge=1),
+    limit: Optional[int] = Query(10, ge=1, le=100),
+    status: Optional[str] = Query(None)
+):
+    query = {}
+
+    if page is not None and page < 1:
+        raise HTTPException(status_code=400, )
+
+    if limit is not None and (limit not in [10, 25, 100]):
+        raise HTTPException(status_code=400)
+
+    if status is not None:
+        query["status"] = status
+
+    total_documents = collectionportal.count_documents(query)
+
+    if page is not None and limit is not None:
+        skip_count = (page - 1) * limit
+        data = collectionportal.find(query).skip(skip_count).limit(limit)
+    else:
+        data = collectionportal.find(query)
+
+    results = list(data)
+
+    total_pages = ceil(total_documents / limit)
+    
+    actual_page = page if page is not None else 1
+
+
+    response = {
+        "total_pages": total_pages,
+        "data": portalsEntity(results),
+        
+    }
+
+    return response
+
+@portal.get("/portal/exporta", tags=["portal"])
 def fill_all_users():
     return portalsEntity(collectionportal.find())
     
