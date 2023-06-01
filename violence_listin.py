@@ -9,7 +9,7 @@ from selenium.webdriver.common.by import By
 import time 
 from dateutil import parser
 import locale
-from config.db import collectionportal,
+from config.db import collectionportal
 
 
 locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')

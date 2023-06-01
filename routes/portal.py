@@ -8,7 +8,7 @@ from models.portal import Portal,UpdatePortal
 from fastapi.responses import FileResponse
 import os 
 import math
-
+from math import ceil
 from pymongo.errors import DuplicateKeyError
 
 from dotenv import load_dotenv
@@ -29,29 +29,40 @@ app = FastAPI()
 
 
 # @portal.get("/portal", tags=["portal"])
-# def find_all_users(page: int = Query(1, ge=1),limit: int = Query(10, ge=1, le=100),order: Optional[str] = Query(None, enum=['asc', 'desc'])
+# def find_all_users(
+#     page: Optional[int] = Query(1, ge=1),
+#     limit: Optional[int] = Query(10, ge=1, le=100),
+#     status: Optional[str] = Query(None)
 # ):
-#     total_documents = collectionportal.count_documents({})
-    
-#     total_pages = math.ceil(total_documents / limit)
-    
-#     # Verifica si la página solicitada excede el número total de páginas
-#     if page > total_pages:
-#         raise HTTPException(status_code=404, detail="Página no encontrada")
-    
-#     skip_count = (page - 1) * limit
-    
-#     data = collectionportal.find().skip(skip_count).limit(limit)
-    
-#     if order == 'asc':
-#         data = sorted(data, key=lambda x: x['fecha'])
-#     elif order == 'desc':
-#         data = sorted(data, key=lambda x: x['fecha'], reverse=True)
-    
-#     results = list(data)
-    
-#     return portalsEntity(results)
+#     query = {}
 
+#     if page is not None and page < 1:
+#         raise HTTPException(status_code=400, )
+
+#     if limit is not None and (limit not in [10, 25, 100]):
+#         raise HTTPException(status_code=400)
+
+#     if status is not None:
+#         query["status"] = status
+
+#     total_documents = collectionportal.count_documents(query)
+
+#     if page is not None and limit is not None:
+#         skip_count = (page - 1) * limit
+#         data = collectionportal.find(query).skip(skip_count).limit(limit)
+#     else:
+#         data = collectionportal.find(query)
+
+#     results = list(data)
+
+#     total_pages = ceil(total_documents / limit)
+
+#     response = {
+#         "total_pages": total_pages,
+#         "data": portalsEntity(results)
+#     }
+
+#     return response
 
 @portal.get("/portal", tags=["portal"])
 def fill_all_users():
@@ -154,8 +165,9 @@ def actualizar_status(body: UpdatePortal):
     ids = [ObjectId(id) for id in body.ids]
 
     collectionportal.update_many({"_id": {'$in': ids}}, {"$set": {"status": body.status}})
-    return {"message": "status actualizado"}
 
+    #devolver los datos actualizados 
+    return portalsEntity(collectionportal.find({"_id": {'$in': ids}}))
 
 
 # @portal.post("/instagraminfo/", tags=["portal"])
@@ -227,12 +239,3 @@ async def get_archivo(nombre_archivo: str):
 @portal.get("/archivovimagen/{nombre_archivo}")
 async def get_archivo(nombre_archivo: str):
     return FileResponse(f"VIOIMAGEN/{nombre_archivo}")
-
-
-
-
-
-
-
-
-
