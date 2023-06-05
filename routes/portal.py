@@ -133,6 +133,7 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
             "status": "Pendiente",
             "Titulo": portal.titulo,
             "fuente": portal.fuente,
+            'url:': "no tiene",
         }
 
         if new_portal["video"] is None and new_portal["imagen"] is None:
@@ -230,8 +231,6 @@ def find_all_users3():
 
 @portal.get("/archivovideo/{nombre_archivo}")
 async def get_archivo(nombre_archivo: str):
-    # return FileResponse(f"VIOLENCIA/{nombre_archivo}")
-    #solo retornar la request url con el file response
     return FileResponse(f"VIOLENCIA/{nombre_archivo}")
 
 

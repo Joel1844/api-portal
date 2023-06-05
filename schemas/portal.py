@@ -12,7 +12,10 @@ def portalEntity(item) -> dict:
         "clasificacion": item["clasificacion"],
         "descripcion": item["descripcion"],
         "status": item["status"],
-        "fuente": item["fuente"]
+        "fuente": item["fuente"],
+        # "url": item["url"]
+        # la url puede ser nula
+        "url": item["url"] if "url" in item else "no tiene"
     }   
     
 def portalsEntity(entity) -> list:
