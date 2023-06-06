@@ -8,8 +8,6 @@ from enum import Enum
 
 @dataclass
 class Portal:
-    # id : Optional[str]
-    # id : Optional[str] = Form(None)
     name: str = Form(default=None)
     Lastname: str = Form(default=None)
     Titulo : str = Form(default=None) 

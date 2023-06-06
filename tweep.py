@@ -1,6 +1,6 @@
 import tweepy
 import pandas as pd
-from config.db import collentionlistim
+from config.db import collentionlistim,collectionportal
 import datetime
 from datetime import datetime, timedelta,date
 from dateutil import tz
@@ -44,10 +44,10 @@ try:
         if imagen is None:
             imagen = 'https://3.bp.blogspot.com/-XiSlfYYT_FM/WN_SwvPLrrI/AAAAAAAAAE0/eNNfi9x0Qpwot3fT3u-h12DxsU4M927QQCLcB/s320/Twitter_logo_2012.svg.png'
         
-    
-
+        null = None
+        
         url = tweet.entities['urls'][0]['url'] if 'urls' in tweet.entities and len(tweet.entities['urls']) > 0 else None
-        tweet_dict = {'fecha': created_at, 'name': user, 'Titulo': text, 'video': url, 'fuente': 'twitter', 'status': 'Pendiente', 'imagen': imagen,'longitude':23232,'latitude':232343,'clasificacion': 'Violencia de Género','descripcion': 'Violencia de Género','Lastname':''}
+        tweet_dict = {'fecha': created_at, 'name': user, 'Titulo': text, 'video': null, 'fuente': 'twitter', 'status': 'Pendiente', 'imagen': imagen,'longitude':23232,'latitude':232343,'clasificacion': 'Violencia de Género','descripcion': 'Violencia de Género','Lastname':'','url':url}
         tweets_list.append(tweet_dict)
     columns_name = ['fecha', 'name', 'Titulo', 'video', 'fuente', 'status', 'imagen','longitude','latitude','clasificacion','descripcion','Lastname']
     df = pd.DataFrame(tweets_list, columns=columns_name)

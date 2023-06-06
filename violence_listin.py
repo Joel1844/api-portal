@@ -88,8 +88,13 @@ for item in items:
  
 
     link_diairo = 'https://www.diariolibre.com' + link['href']
+    #hacer el video null
+    null = None
+    # enviarlo junto  con el titulo 
+
+    
      
-    dic = {'Titulo': title.text,'video': link_diairo  ,'fuente':'Diario Libre', 'fecha': date_formatted, 'imagen': imagen,'status': 'Pendiente',"name": "Diario Libre", "Lastname": "Diario Libre", "longitude": -69.9000000, "latitude": 18.4833333, "clasificacion": "Violencia de Genero", "descripcion": "Violencia de Genero"}
+    dic = {'Titulo': title.text + link_diairo ,'video': null  ,'fuente':'Diario Libre', 'fecha': date_formatted, 'imagen': imagen,'status': 'Pendiente',"name": "Diario Libre", "Lastname": "Diario Libre", "longitude": -69.9000000, "latitude": 18.4833333, "clasificacion": "Violencia de Genero", "descripcion": "Violencia de Genero",'url': link_diairo}
     print(dic)
     try:
         collectionportal.insert_one(dic)
