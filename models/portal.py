@@ -23,7 +23,7 @@ class Portal:
 
 class STATUS(str, Enum):
     APROBADO = "Aprobado"
-    RECHAZADO = "Rechazado"
+    DESABILITADO = "Desabilitado"
 
 
 class UpdatePortal(BaseModel):
