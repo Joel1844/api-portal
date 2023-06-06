@@ -1,6 +1,5 @@
 import pymongo
 from pymongo import MongoClient, TEXT
-from http import client
 from dotenv import load_dotenv
 import os
 

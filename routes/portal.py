@@ -35,15 +35,19 @@ from math import ceil
 def find_all_users(
     page: Optional[int] = Query(1, ge=1),
     limit: Optional[int] = Query(10, ge=1, le=100),
-    status: Optional[str] = Query(None)
+    status: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
+
 ):
+
+
     query = {}
+
+    if search is not None:
+        query["Titulo"] =  { "$regex": diacritic_sensitive(search), "$options": "i" }
 
     if page is not None and page < 1:
         raise HTTPException(status_code=400, )
-
-    if limit is not None and (limit not in [10, 25, 100]):
-        raise HTTPException(status_code=400)
 
     if status is not None:
         query["status"] = status
@@ -59,17 +63,35 @@ def find_all_users(
     results = list(data)
 
     total_pages = ceil(total_documents / limit)
+    # hacer que lleguen los ultimos datos primero
+    results.reverse()
     
     actual_page = page if page is not None else 1
 
 
     response = {
         "total_pages": total_pages,
+        "count": total_documents,
         "data": portalsEntity(results),
         
     }
 
     return response
+
+
+
+def diacritic_sensitive(text: str) -> str:
+    """Add diacritics to regex"""
+    return text.lower().translate(str.maketrans(
+        {
+            'a': '[aá]',
+            'e': '[eé]',
+            'i': '[ií]',
+            'o': '[oó]',
+            'u': '[uúü]',
+            # 'ñ': '[nñ]',
+        }
+    ))
 
 @portal.get("/portal/exporta", tags=["portal"])
 def fill_all_users():
