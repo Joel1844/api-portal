@@ -116,6 +116,10 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
 
         video_id = None
         guardarvideo = None
+        image_id = None
+        guardarimagen = None
+
+
         if video_file is not None:
             video_content = await video_file.read()
             video_id = colletionvideo.insert_one({"description": video_file.filename}).inserted_id
@@ -131,8 +135,7 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
         
         carpeta1 = "VIOIMAGEN"
         os.makedirs(carpeta1, exist_ok=True)
-        image_id = None
-        guardarimagen = None
+        
         if image_file is not None:
             image_content = await image_file.read()
             image_id = colletionvideo.insert_one({"description": image_file.filename}).inserted_id
@@ -150,8 +153,8 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
             "Lastname": portal.Lastname,
             #hacer que la fecha vengan deun formato correcto    
             "fecha": portal.fecha,
-            "video": api_url_video if guardarvideo is not None else None,
-            "imagen": apir_url_imagen if guardarimagen is not None else None,
+            "video":  None,
+            "imagen": None,
             "latitude": portal.latitude, 
             "longitude": portal.longitude,
             "clasificacion": portal.clasification,
@@ -161,6 +164,14 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
             "fuente": portal.fuente,
             'url:': "no tiene",
         }
+
+        if video_id is not None:
+            api_url_video = os.path.join(f"archivovideo/{video_id}.{video_file.content_type.split('/')[1]}")
+            new_portal["video"] = api_url_video
+
+        if image_id is not None:
+            apir_url_imagen = os.path.join(f"archivovimagen/{image_id}.{image_file.content_type.split('/')[1]}")
+            new_portal["imagen"] = apir_url_imagen
 
         if new_portal["video"] is None and new_portal["imagen"] is None:
             raise HTTPException(status_code=400, detail="At least one of 'video' or 'imagen' is required.")
@@ -172,10 +183,20 @@ async def create_user(req:Request ,portal: Portal = Depends(), video_file: Optio
     
     except DuplicateKeyError:
         error_message = "Clave duplicada"
+
+        if guardarvideo is not None:
+            os.remove(guardarvideo)
+        if guardarimagen is not None:
+            os.remove(guardarimagen)
+
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": error_message})
     
     except Exception as error:
         # Si ocurre un error diferente a DuplicateKeyError, no se guardarán los archivos
+        if guardarvideo is not None:
+            os.remove(guardarvideo)
+        if guardarimagen is not None:
+            os.remove(guardarimagen)
         error_message = str(error)
         raise HTTPException(status_code=500, detail=error_message)
     
