@@ -89,7 +89,7 @@ for item in items:
 
     link_diairo = 'https://www.diariolibre.com' + link['href']
     #hacer el video null
-    null = None
+    null = 'https://defensordelpueblo.gob.do/'
     # enviarlo junto  con el titulo 
 
     

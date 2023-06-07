@@ -13,41 +13,13 @@ def portalEntity(item) -> dict:
         "descripcion": item["descripcion"],
         "status": item["status"],
         "fuente": item["fuente"],
-        # "url": item["url"]
-        # la url puede ser nula
-        "url": item["url"] if "url" in item else "no tiene"
+        "url": item["url"] 
     }   
     
 def portalsEntity(entity) -> list:
    return [portalEntity(item) for item in entity]
 
 
-def instagramEntity(item) -> dict:
-    return {
-        "id": str(item["_id"]),
-        "Nombre": item["Nombre"],
-        "fecha": item["fecha"],
-        "video": item["video"],
-        "owner_username": item["owner_username"],
-        'fuente': item['fuente'],
-        "status": item["status"]
-    }   
-    
-def instagramEsEntity(entity) -> list:
-   return [instagramEntity(item) for item in entity]
 
 
-def diarioEntity(item) -> dict:
-    return {
-        "id": str(item["_id"]),
-        "Nombre": item["Nombre"],
-        "fecha": item["fecha"],
-        "video": item["video"],
-        "owner_username": item["owner_username"],
-        'fuente': item['fuente'],
-        "status": item["status"],
-        "imagen": item["imagen"]
-    }
 
-def diarioEsEntity(entity) -> list:
-    return [diarioEntity(item) for item in entity]

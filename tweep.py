@@ -44,7 +44,7 @@ try:
         if imagen is None:
             imagen = 'https://3.bp.blogspot.com/-XiSlfYYT_FM/WN_SwvPLrrI/AAAAAAAAAE0/eNNfi9x0Qpwot3fT3u-h12DxsU4M927QQCLcB/s320/Twitter_logo_2012.svg.png'
         
-        null = None
+        null = 'https://defensordelpueblo.gob.do/'
         
         url = tweet.entities['urls'][0]['url'] if 'urls' in tweet.entities and len(tweet.entities['urls']) > 0 else None
         tweet_dict = {'fecha': created_at, 'name': user, 'Titulo': text, 'video': null, 'fuente': 'twitter', 'status': 'Pendiente', 'imagen': imagen,'longitude':23232,'latitude':232343,'clasificacion': 'Violencia de Género','descripcion': 'Violencia de Género','Lastname':'','url':url}
