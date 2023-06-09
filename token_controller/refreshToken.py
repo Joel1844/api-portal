@@ -13,8 +13,8 @@ REFRESH_TOKEN_EXPIRE_MINUTES = os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES")
 ALGORITHM = os.getenv("ALGORITHM")
 
 
-JWT_SECRET_KEY = os.environ['JWT_SECRET_KEY']
-JWT_REFRESH_SECRET_KEY = os.environ['JWT_REFRESH_SECRET_KEY']
+JWT_SECRET_KEY = os.environ['SECRET_KEY']
+JWT_REFRESH_SECRET_KEY = os.environ['REFRESH_TOKEN_EXPIRE_MINUTEs']
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

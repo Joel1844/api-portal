@@ -1,7 +1,10 @@
 from fastapi import APIRouter, BackgroundTasks
 from pydantic import Field, BaseModel, EmailStr
 from pymongo.collection import Collection
-from ..config.db import DbRed
+
+
+from config.db import DbRed
+
 from typing import Optional
 # from utils import hash_password, verify_password
 from bson.objectid import ObjectId

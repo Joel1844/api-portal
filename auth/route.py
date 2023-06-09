@@ -1,89 +1,82 @@
-from urllib import request
 
-from fastapi import FastAPI, Form,Response
-from fastapi import APIRouter, BackgroundTasks
-from dotenv import load_dotenv
-from os import getenv
+from fastapi import Form
+from fastapi import APIRouter
 
-router = APIRouter()
-load_dotenv()
-
-from ..config.db import DbRed
-
-from ..auth.auth_model import Login,Register
-from fastapi import FastAPI, HTTPException, Depends, Request,status
-# from utils import *
-from bson.objectid import ObjectId
+import auth.oauth as au
+import auth.auth_model as auth_model
+from fastapi import HTTPException, Depends,status
 from fastapi.encoders import jsonable_encoder
-from fastapi.middleware.cors import CORSMiddleware
-from jose import jwt
 
-import os
-
-from dotenv import load_dotenv
-
-load_dotenv()
-
-# from oauth import get_current_user
-
-
-# from jwttoken import create_access_token
-
-from ..token.jwtToken import create_access_token
-
-from fastapi.security import OAuth2PasswordRequestForm
-
-# from hashing import Hash
-from ..token.hashing import Hash
-
-from .auth_model import Base_User
-
+from token_controller import hashing, refreshToken
 from .oauth import get_current_user
+import os
+# from ..token.hashing import Hash
+# import config.db as db_config
 
+from config.db import DbRed
+router = APIRouter()
 collection =  DbRed["users"]
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
 @router.get("/")
-def read_root(current_user:Login = Depends(get_current_user)):
+def read_root(current_user:auth_model.Login = Depends(get_current_user)):
 	return {"data":"Hello OWrld"}
 
 @router.post("/login")
-async def login_user(request:Login):
+async def login_user(request:auth_model.Login):
 
     try:
         
-        user = await DbRed["users"].find_one({"correo": request.correo})
+        user = await collection.find_one({"correo": request.correo})
 
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Invalid credentials")
 
-        if not Hash.verify(user['password'] ,request.password):
+        if not hashing.Hash.verify(user['password'] ,request.password):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Incorrect password")
 
-        access_token = create_access_token(data={"sub": user["correo"]})
+        access_token = refreshToken.create_access_token(data={"sub": user["correo"]})
 
         return {'message': 'Logueado con exito.',"access_token": access_token, "token_type": "bearer"}
 
     except Exception as e:
         return str(e)
 
-
-
 @router.post("/register", summary="create new users")
-async def register_user(user: Register):
-    user_db = DbRed["users"]
+async def register_user(user: auth_model.Register):
+    user_db = collection
 
-    print(Register)
+    try:
+    
+        exist = user_db.find_one({"correo": user.correo})
+        print(exist)
+
+        if exist is not None:
+            return {"message": "El usuario ya existe"}
+        else:
+
+            hashed_pass = hashing.Hash.bcrypt(user.password)
+            user_object = dict(user)
+            user_object["password"] = hashed_pass
+            # user_id = database["users"].insert(user_object)
+            inserted = user_db.insert_one(user_object)
+
+            return str(inserted.inserted_id) and {"res":"created"}
+        
+    except Exception as e:
+        return str(e)
+
     # user_db = await database["users"].insert_one(user.dict())
     exist = await user_db.find_one({"correo": user.correo})
     print(exist)
-    if exist:
+
+    if exist is not None:
         print(user_db)
         return {"message": "El usuario ya existe"}
     else:
-        hashed_pass = Hash.bcrypt(user.password)
+        hashed_pass = token_controller.hashing.Hash.bcrypt(user.password)
         user_object = dict(user)
         user_object["password"] = hashed_pass
         # user_id = database["users"].insert(user_object)

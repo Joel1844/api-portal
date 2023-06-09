@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from routes.user import user
 from routes.portal import portal
+from dotenv import load_dotenv
+from os import getenv
+load_dotenv()
 
-from auth.route import router
+from auth.route import router as auth_routes
 app = FastAPI()
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,10 +20,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_routes)
 app.include_router(user)
 app.include_router(portal)
-
-app.include_router(router)
 
 # app.mount("/", StaticFiles(directory=os.path.abspath(
 #     "./app/build").replace("\\", "/"), html=True), name="app")

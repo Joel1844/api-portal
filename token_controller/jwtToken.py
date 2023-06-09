@@ -1,16 +1,7 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 import os
-
-from dotenv import load_dotenv
-
-load_dotenv()
-
-# from auth.user_model import TokenData
-
-from ..auth.auth_model import TokenData
-
-
+import auth.auth_model as auth_model
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
@@ -26,13 +17,12 @@ def create_access_token(data: dict):
 
 
 def verify_token(token:str,credentials_exception):
-
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-        # token_data = au.TokenData(username=username)
-        token_data = TokenData(username=username)
+        token_data = auth_model.TokenData(username=username)
+        # token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
