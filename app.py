@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from routes.user import user
 from routes.portal import portal
+
+from auth.route import router
 app = FastAPI()
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +19,8 @@ app.add_middleware(
 
 app.include_router(user)
 app.include_router(portal)
+
+app.include_router(router)
 
 # app.mount("/", StaticFiles(directory=os.path.abspath(
 #     "./app/build").replace("\\", "/"), html=True), name="app")

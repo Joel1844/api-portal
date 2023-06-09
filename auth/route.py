@@ -4,10 +4,12 @@ from fastapi import FastAPI, Form,Response
 from fastapi import APIRouter, BackgroundTasks
 from dotenv import load_dotenv
 from os import getenv
+
 router = APIRouter()
 load_dotenv()
 
 from ..config.db import DbRed
+
 from ..auth.auth_model import Login,Register
 from fastapi import FastAPI, HTTPException, Depends, Request,status
 # from utils import *
