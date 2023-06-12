@@ -29,7 +29,7 @@ async def login_user(request:auth_model.Login):
 
     try:
         
-        user = await collection.find_one({"correo": request.correo})
+        user = collection.find_one({"correo": request.correo})
 
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Invalid credentials")
