@@ -59,7 +59,7 @@ def find_all_users(
 
     if page is not None and limit is not None:
         skip_count = (page - 1) * limit
-        data = collectionportal.find(query).skip(skip_count).limit(limit)
+        data = collectionportal.find(query).sort("_id", -1).skip(skip_count).limit(limit)
     else:
         data = collectionportal.find(query)
 
