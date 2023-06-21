@@ -67,8 +67,7 @@ def find_all_users(
 
     total_pages = ceil(total_documents / limit)
     # hacer que lleguen los ultimos datos primero
-    results.reverse()
-    
+   
     actual_page = page if page is not None else 1
 
 
